@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Movie Explorer</title>
+  <style>
+    body {
+      background-color: #8a5353;
+      color: #fff;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .search-bar {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .search-bar input {
+      width: 300px;
+      padding: 10px;
+    }
+    .search-bar button {
+      padding: 10px 20px;
+      margin-left: 10px;
+      background-color: red;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .movies-container {
+        display: grid;
+        grid-template-columns: repeat(3, 200px); 
+        place-content: center;
+        gap: 100px;
+    }
+    .movie-card {
+      width: 240px;
+      background-color: #2b2a2a;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .movie-card img {
+      width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .movie-card h3 {
+      margin: 10px 0 5px;
+      font-size: 16px;
+    }
+    .movie-card p {
+      font-size: 14px;
+      color: #ccc;
+    }
+    .twobtns{
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin: 25px;
+
+    }
+    .twobtns button{
+        background-color: red;
+        border: none;
+        color: white;
+        padding: 10px;
+
+    }
+    @media screen and (max-width:450px) {
+        .movies-container {
+            display: grid;
+            grid-template-columns: 200px; 
+            place-content: center;
+        }
+    }
+  </style>
+</head>
+<body>
+  <h1>Movie Explorer</h1>
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search movie" />
+    <button onclick="searchMovie()">Search</button>
+  </div>
+  <div class="movies-container" id="moviesContainer"></div>
+  <div class="twobtns">
+    <button><a href="index.html">Previous</a></button>
+   
+  </div>
+  
+
+  <script>
+    const moviesContainer = document.getElementById('moviesContainer');
+
+    // 20 фильмді көрсету
+    async function loadMovies() {
+      try {
+        const response = await fetch('https://jsonfakery.com/movies/paginated?limit=20&page=1');
+        const data = await response.json();
+
+        moviesContainer.innerHTML = '';
+        for (const movie of data.data) {
+          const card = createMovieCard(movie);
+          moviesContainer.appendChild(card);
+        }
+      } catch (error) {
+        console.error('error:', error);
+      }
+    }
+
+    // Фильмді іздеу
+    async function searchMovie() {
+      const query = document.getElementById('searchInput').value.trim();
+      if (query === '') {
+        loadMovies();
+        return;
+      }
+
+      try {
+        const response = await fetch(`https://jsonfakery.com/movies/paginated?q=${encodeURIComponent(query)}&limit=1&page=1`);
+        const data = await response.json();
+
+        moviesContainer.innerHTML = '';
+
+        if (data.data.length === 0) {
+          moviesContainer.innerHTML = '<p>not find movie</p>';
+          return;
+        }
+
+        const movie = data.data[0];
+        const card = createMovieCard(movie);
+        moviesContainer.appendChild(card);
+
+      } catch (error) {
+        console.error('Қате:', error);
+      }
+    }
+
+    // HTML карточка жасау
+    function createMovieCard(movie) {
+      const card = document.createElement('div');
+      card.className = 'movie-card';
+
+      card.innerHTML = `
+        <img src="${movie.poster_path}" alt="${movie.original_title}" />
+        <h3>${movie.original_title}</h3>
+        <p>${movie.overview}</p>
+      `;
+
+      return card;
+    }
+
+    // Бастапқы 20 фильмді жүктеу
+    loadMovies();
+  </script>
+</body>
+</html>
